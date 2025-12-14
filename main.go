@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"text/template"
 )
 
 type Config struct {
@@ -20,41 +19,19 @@ func CreateConfig() *Config {
 
 type WebAuth struct {
 	next     http.Handler
-	headers  map[string]string
-	name     string
-	template *template.Template
 }
 
 func New(ctx context.Context, next http.Handler, config *Config, name string) (http.Handler, error) {
-	if len(config.Headers) == 0 {
-		return nil, fmt.Errorf("headers cannot be empty")
-	}
-
 	return &WebAuth{
-		headers:  config.Headers,
 		next:     next,
-		name:     name,
-		template: template.New("WebAuth").Delims("[[", "]]"),
 	}, nil
 }
 
 func (a *WebAuth) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	for key, value := range a.headers {
-		tmpl, err := a.template.Parse(value)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		writer := &bytes.Buffer{}
-
-		err = tmpl.Execute(writer, req)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		req.Header.Set(key, writer.String())
+	_, err := req.Cookie("authtoken")
+	if err == http.ErrNoCookie {
+		http.Redirect(rw, req, "/login", http.StatusFound)
+		return
 	}
 
 	a.next.ServeHTTP(rw, req)
