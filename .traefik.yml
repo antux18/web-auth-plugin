@@ -1,12 +1,10 @@
-displayName: Demo Plugin
+displayName: Web Authentification
 type: middleware
-iconPath: .assets/icon.png
 
-import: github.com/traefik/plugindemo
+import: github.com/antux18/web-auth-plugin
 
-summary: '[Demo] Add Request Header'
+summary: "Plugin Traefik pour le TP3 d'Administration des Systèmes"
 
 testData:
   Headers:
-    X-Demo: test
     X-URL: '{{URL}}'
