@@ -1,4 +1,4 @@
-package web_auth
+package web_auth_plugin
 
 import (
 	"bytes"
